@@ -12,7 +12,14 @@ authors = [
     { name = "mign0n", email = "mign0n.git@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "alembic>=1.17.0",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.119.0",
+    "python-dotenv>=1.1.1",
+    "sqlalchemy>=2.0.44",
+    "uvicorn>=0.37.0",
+]
 
 [dependency-groups]
 dev = [
@@ -72,10 +79,14 @@ ignore = [
   "D100",     # missing docstring in public module
   "D104",     # missing docstring in public package
   "D106",     # missing docstring in public nested class
+  "COM812",   # may cause conflicts when used with the formatter
 ]
 
 mccabe.max-complexity = 6
 pydocstyle.convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/env.py" = ["D"]
 
 [tool.mypy]
 python_version = "3.13"
