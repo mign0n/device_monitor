@@ -3,20 +3,21 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import TypeVar, override
 
-from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_monitor.crud import BatteryRepository
 from device_monitor.database.base import Base
 from device_monitor.database.models import Battery
-from device_monitor.schemas import BatteryCreate
+from device_monitor.schemas import BatteryCreate, BatteryUpdate
+from device_monitor.validators import check_battery_exists
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
-class BaseService[ModelType, CreateSchemaType](ABC):
+class BaseService[ModelType, CreateSchemaType, UpdateSchemaType](ABC):
     """Abstract base class for service handling common functionality."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -63,8 +64,26 @@ class BaseService[ModelType, CreateSchemaType](ABC):
             An instance of the specified model type.
         """
 
+    @abstractmethod
+    async def update(
+        self,
+        id_: uuid.UUID,
+        data: UpdateSchemaType,
+    ) -> ModelType | None:
+        """Update record of the specified type by id.
 
-class BatteryService(BaseService[Battery, BatteryCreate]):
+        This method must be implemented by subclasses.
+
+        Args:
+            id_: Record ID.
+            data: The data to update a record.
+
+        Returns:
+            An instance of the specified model type.
+        """
+
+
+class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
     """Service for managing battery-related operations."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -104,14 +123,25 @@ class BatteryService(BaseService[Battery, BatteryCreate]):
         Args:
             id_: Record ID.
 
-        Raises:
-            HTTPException: If no battery with the given identifier exists,
-            a 404 HTTPException is raised.
-
         Returns:
             The battery record if found; otherwise, None.
         """
-        battery = await self.battery_repo.get_by_id(id_)
-        if not battery:
-            raise HTTPException(status_code=404, detail="Battery not found")
-        return battery
+        return await check_battery_exists(id_, self.battery_repo)
+
+    @override
+    async def update(
+        self,
+        id_: uuid.UUID,
+        data: BatteryUpdate,
+    ) -> Battery | None:
+        """Update record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+            data: The data to update a record.
+
+        Returns:
+            Updated instance of the battery.
+        """
+        await check_battery_exists(id_, self.battery_repo)
+        return await self.battery_repo.update(id_, data)

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 
 from device_monitor.database.models import Battery
 from device_monitor.dependencies import get_battery_service
-from device_monitor.schemas import BatteryCreate, BatteryDB
+from device_monitor.schemas import BatteryCreate, BatteryDB, BatteryUpdate
 from device_monitor.services import BatteryService
 
 router = APIRouter()
@@ -74,3 +74,29 @@ async def get_battery(
         Battery: The newly created battery record.
     """
     return await battery_service.get_by_id(battery_id)
+
+
+@router.patch(
+    "/batteries",
+    response_model=BatteryDB,
+    summary="Update a battery data.",
+    description=(
+        "This endpoint updates an existing battery record in the database."
+    ),
+)
+async def update_battery(
+    battery_id: uuid.UUID,
+    battery_data: BatteryUpdate,
+    battery_service: Annotated[BatteryService, Depends(get_battery_service)],
+) -> Battery | None:
+    """Updates an existing battery record.
+
+    Args:
+        battery_id: The ID of the battery to update.
+        battery_data: The data to update the battery record.
+        battery_service: The service used to interact with battery records.
+
+    Returns:
+        Battery: The updated battery record.
+    """
+    return await battery_service.update(battery_id, battery_data)

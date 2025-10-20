@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_monitor.database.models import Battery
-from device_monitor.schemas import BatteryCreate
+from device_monitor.schemas import BatteryCreate, BatteryUpdate
 
 
 class BatteryRepository:
@@ -58,3 +58,26 @@ class BatteryRepository:
             select(self.model).where(self.model.id == battery_id)
         )
         return battery.scalar_one_or_none()
+
+    async def update(
+        self,
+        battery_id: uuid.UUID,
+        battery_data: BatteryUpdate,
+    ) -> Battery | None:
+        """Update a battery record.
+
+        Args:
+            battery_id: Battery ID.
+            battery_data: The data to update a battery record.
+
+        Returns:
+            Updated battery instance.
+        """
+        battery = await self.get_by_id(battery_id)
+        if not battery:
+            return None
+        for field, value in battery_data.model_dump(exclude_unset=True).items():
+            setattr(battery, field, value)
+        await self.session.flush()
+        await self.session.refresh(battery)
+        return battery
