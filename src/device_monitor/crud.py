@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_monitor.database.models import Battery
+from device_monitor.schemas import BatteryCreate
 
 
 class BatteryRepository:
@@ -17,6 +18,18 @@ class BatteryRepository:
         """
         self.session = session
         self.model = Battery
+
+    async def create(self, battery_data: BatteryCreate) -> Battery:
+        """Create a battery record.
+
+        Returns:
+            A battery instance.
+        """
+        battery = Battery(**battery_data.model_dump())
+        self.session.add(battery)
+        await self.session.flush()
+        await self.session.refresh(battery)
+        return battery
 
     async def get_all(self) -> Sequence[Battery]:
         """Retrieve all battery records from the database.

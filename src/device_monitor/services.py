@@ -2,16 +2,19 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import TypeVar, override
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_monitor.crud import BatteryRepository
 from device_monitor.database.base import Base
 from device_monitor.database.models import Battery
+from device_monitor.schemas import BatteryCreate
 
 ModelType = TypeVar("ModelType", bound=Base)
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 
 
-class BaseService[ModelType](ABC):
+class BaseService[ModelType, CreateSchemaType](ABC):
     """Abstract base class for service handling common functionality."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -32,8 +35,18 @@ class BaseService[ModelType](ABC):
             A sequence containing all records of the specified model type.
         """
 
+    @abstractmethod
+    async def create(self, data: CreateSchemaType) -> ModelType:
+        """Create record of the specified type.
 
-class BatteryService(BaseService[Battery]):
+        This method must be implemented by subclasses.
+
+        Returns:
+            An instance of the specified model type.
+        """
+
+
+class BatteryService(BaseService[Battery, BatteryCreate]):
     """Service for managing battery-related operations."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -53,3 +66,12 @@ class BatteryService(BaseService[Battery]):
             A sequence containing all battery records from the repository.
         """
         return await self.batery_repo.get_all()
+
+    @override
+    async def create(self, data: BatteryCreate) -> Battery:
+        """Create a battery record.
+
+        Returns:
+            A battery instance from the repository.
+        """
+        return await self.batery_repo.create(data)
