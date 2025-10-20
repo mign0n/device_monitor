@@ -41,9 +41,8 @@ class BatteryRepository:
         Returns:
             A sequence containing all battery records.
         """
-        async with self.session.begin():
-            db_objs = await self.session.execute(select(self.model))
-            return db_objs.scalars().all()
+        db_objs = await self.session.execute(select(self.model))
+        return db_objs.scalars().all()
 
     async def get_by_id(self, battery_id: uuid.UUID) -> Battery | None:
         """Create a battery record.
@@ -61,21 +60,18 @@ class BatteryRepository:
 
     async def update(
         self,
-        battery_id: uuid.UUID,
+        battery: Battery,
         battery_data: BatteryUpdate,
     ) -> Battery | None:
         """Update a battery record.
 
         Args:
-            battery_id: Battery ID.
+            battery: Battery object.
             battery_data: The data to update a battery record.
 
         Returns:
             Updated battery instance.
         """
-        battery = await self.get_by_id(battery_id)
-        if not battery:
-            return None
         for field, value in battery_data.model_dump(exclude_unset=True).items():
             setattr(battery, field, value)
         await self.session.flush()

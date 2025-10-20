@@ -156,8 +156,8 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         Returns:
             Updated instance of the battery.
         """
-        await check_battery_exists(id_, self.battery_repo)
-        return await self.battery_repo.update(id_, data)
+        battery = await check_battery_exists(id_, self.battery_repo)
+        return await self.battery_repo.update(battery, data)
 
     @override
     async def remove(self, id_: uuid.UUID) -> Battery | None:
