@@ -9,7 +9,7 @@ from device_monitor.dependencies import get_battery_service
 from device_monitor.schemas import BatteryCreate, BatteryDB, BatteryUpdate
 from device_monitor.services import BatteryService
 
-router = APIRouter()
+router = APIRouter(tags=["Batteries"])
 
 
 @router.get(
@@ -33,7 +33,7 @@ async def get_batteries(
 
 
 @router.post(
-    "/batteries",
+    "/battery",
     response_model=BatteryDB,
     summary="Create a battery.",
     description="This endpoint creates new battery record in the database.",
@@ -77,7 +77,7 @@ async def get_battery(
 
 
 @router.patch(
-    "/batteries",
+    "/battery",
     response_model=BatteryDB,
     summary="Update a battery data.",
     description=(
