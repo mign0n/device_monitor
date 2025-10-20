@@ -1,7 +1,9 @@
+import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import TypeVar, override
 
+from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,6 +43,22 @@ class BaseService[ModelType, CreateSchemaType](ABC):
 
         This method must be implemented by subclasses.
 
+        Args:
+            data: The data to create a new record.
+
+        Returns:
+            An instance of the specified model type.
+        """
+
+    @abstractmethod
+    async def get_by_id(self, id_: uuid.UUID) -> ModelType | None:
+        """Retrieve record of the specified type by id.
+
+        This method must be implemented by subclasses.
+
+        Args:
+            id_: Record ID.
+
         Returns:
             An instance of the specified model type.
         """
@@ -56,7 +74,7 @@ class BatteryService(BaseService[Battery, BatteryCreate]):
             session: The asynchronous session for database interactions.
         """
         super().__init__(session)
-        self.batery_repo = BatteryRepository(session)
+        self.battery_repo = BatteryRepository(session)
 
     @override
     async def get_all(self) -> Sequence[Battery]:
@@ -65,13 +83,35 @@ class BatteryService(BaseService[Battery, BatteryCreate]):
         Returns:
             A sequence containing all battery records from the repository.
         """
-        return await self.batery_repo.get_all()
+        return await self.battery_repo.get_all()
 
     @override
     async def create(self, data: BatteryCreate) -> Battery:
         """Create a battery record.
 
+        Args:
+            data: The data to create a new battery record.
+
         Returns:
             A battery instance from the repository.
         """
-        return await self.batery_repo.create(data)
+        return await self.battery_repo.create(data)
+
+    @override
+    async def get_by_id(self, id_: uuid.UUID) -> Battery | None:
+        """Retrieve record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+
+        Raises:
+            HTTPException: If no battery with the given identifier exists,
+            a 404 HTTPException is raised.
+
+        Returns:
+            The battery record if found; otherwise, None.
+        """
+        battery = await self.battery_repo.get_by_id(id_)
+        if not battery:
+            raise HTTPException(status_code=404, detail="Battery not found")
+        return battery

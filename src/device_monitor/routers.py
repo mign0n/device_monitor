@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Sequence
 from typing import Annotated
 
@@ -51,3 +52,25 @@ async def create_battery(
         Battery: The newly created battery record.
     """
     return await battery_service.create(battery_data)
+
+
+@router.get(
+    "/battery",
+    response_model=BatteryDB,
+    summary="Retrieve the battery by its ID.",
+    description="This endpoint fetches the battery by ID from the database.",
+)
+async def get_battery(
+    battery_id: uuid.UUID,
+    battery_service: Annotated[BatteryService, Depends(get_battery_service)],
+) -> Battery | None:
+    """Retrieve the battery by its ID.
+
+    Args:
+        battery_id: Battery ID.
+        battery_service: The service used to interact with battery records.
+
+    Returns:
+        Battery: The newly created battery record.
+    """
+    return await battery_service.get_by_id(battery_id)

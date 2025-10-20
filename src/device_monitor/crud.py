@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Sequence
 
 from sqlalchemy import select
@@ -22,6 +23,9 @@ class BatteryRepository:
     async def create(self, battery_data: BatteryCreate) -> Battery:
         """Create a battery record.
 
+        Args:
+            battery_data: The data to create a new battery record.
+
         Returns:
             A battery instance.
         """
@@ -40,3 +44,17 @@ class BatteryRepository:
         async with self.session.begin():
             db_objs = await self.session.execute(select(self.model))
             return db_objs.scalars().all()
+
+    async def get_by_id(self, battery_id: uuid.UUID) -> Battery | None:
+        """Create a battery record.
+
+        Args:
+            battery_id: Battery ID.
+
+        Returns:
+            A battery instance.
+        """
+        battery = await self.session.execute(
+            select(self.model).where(self.model.id == battery_id)
+        )
+        return battery.scalar_one_or_none()
