@@ -100,3 +100,25 @@ async def update_battery(
         Battery: The updated battery record.
     """
     return await battery_service.update(battery_id, battery_data)
+
+
+@router.delete(
+    "/battery",
+    response_model=BatteryDB,
+    summary="Delete the battery by its ID.",
+    description="This endpoint removes the battery from the database.",
+)
+async def remove_battery(
+    battery_id: uuid.UUID,
+    battery_service: Annotated[BatteryService, Depends(get_battery_service)],
+) -> Battery | None:
+    """Remove the battery by its ID.
+
+    Args:
+        battery_id: Battery ID.
+        battery_service: The service used to interact with battery records.
+
+    Returns:
+        The removed battery record.
+    """
+    return await battery_service.remove(battery_id)

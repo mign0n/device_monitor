@@ -82,6 +82,19 @@ class BaseService[ModelType, CreateSchemaType, UpdateSchemaType](ABC):
             An instance of the specified model type.
         """
 
+    @abstractmethod
+    async def remove(self, id_: uuid.UUID) -> ModelType | None:
+        """Remove record of the specified type by id.
+
+        This method must be implemented by subclasses.
+
+        Args:
+            id_: Record ID.
+
+        Returns:
+            An instance of the specified model type.
+        """
+
 
 class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
     """Service for managing battery-related operations."""
@@ -145,3 +158,16 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         """
         await check_battery_exists(id_, self.battery_repo)
         return await self.battery_repo.update(id_, data)
+
+    @override
+    async def remove(self, id_: uuid.UUID) -> Battery | None:
+        """Remove record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+
+        Returns:
+            Removed instance of the battery.
+        """
+        battery = await check_battery_exists(id_, self.battery_repo)
+        return await self.battery_repo.remove(battery)

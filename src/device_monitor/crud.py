@@ -81,3 +81,16 @@ class BatteryRepository:
         await self.session.flush()
         await self.session.refresh(battery)
         return battery
+
+    async def remove(self, battery: Battery) -> Battery | None:
+        """Remove a battery record.
+
+        Args:
+            battery: Battery object.
+
+        Returns:
+            Removed battery instance.
+        """
+        await self.session.delete(battery)
+        await self.session.flush()
+        return battery
