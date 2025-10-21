@@ -1,92 +1,104 @@
 import uuid
 from collections.abc import Sequence
+from typing import TypeVar
 
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from device_monitor.database.base import Base
 from device_monitor.database.models import Battery
-from device_monitor.schemas import BatteryCreate, BatteryUpdate
+
+ModelType = TypeVar("ModelType", bound=Base)
 
 
-class BatteryRepository:
-    """Repository for managing battery data interactions with the database."""
+class BaseRepository[ModelType: Base]:
+    """Base repository for managing data interactions with the database."""
+
+    model: type[ModelType]
 
     def __init__(self, session: AsyncSession) -> None:
-        """Initializes the BatteryRepository with a database session.
+        """Init the repository using a database session and a specific model.
 
         Args:
             session: The asynchronous session for database operations.
+            model: Database model.
         """
         self.session = session
-        self.model = Battery
 
-    async def create(self, battery_data: BatteryCreate) -> Battery:
-        """Create a battery record.
+    async def create(self, data: BaseModel) -> ModelType:
+        """Create a new record corresponding to a specific model.
 
         Args:
-            battery_data: The data to create a new battery record.
+            data: The data to create a new record.
 
         Returns:
-            A battery instance.
+            Created object of a specific model.
         """
-        battery = Battery(**battery_data.model_dump())
-        self.session.add(battery)
+        data_obj = self.model(**data.model_dump())
+        self.session.add(data_obj)
         await self.session.flush()
-        await self.session.refresh(battery)
-        return battery
+        await self.session.refresh(data_obj)
+        return data_obj
 
-    async def get_all(self) -> Sequence[Battery]:
-        """Retrieve all battery records from the database.
+    async def get_all(self) -> Sequence[ModelType]:
+        """Retrieve all records of a specific model from the database.
 
         Returns:
-            A sequence containing all battery records.
+            A sequence containing all objects of a specific model.
         """
         db_objs = await self.session.execute(select(self.model))
         return db_objs.scalars().all()
 
-    async def get_by_id(self, battery_id: uuid.UUID) -> Battery | None:
-        """Create a battery record.
+    async def get_by_id(self, obj_id: uuid.UUID) -> ModelType | None:
+        """Get record of a specific model from the database by ID.
 
         Args:
-            battery_id: Battery ID.
+            obj_id: Object ID.
 
         Returns:
-            A battery instance.
+            A object of a specific model or None.
         """
-        battery = await self.session.execute(
-            select(self.model).where(self.model.id == battery_id)
+        instance = await self.session.execute(
+            select(self.model).where(self.model.id == obj_id)
         )
-        return battery.scalar_one_or_none()
+        return instance.scalar_one_or_none()
 
     async def update(
         self,
-        battery: Battery,
-        battery_data: BatteryUpdate,
-    ) -> Battery | None:
-        """Update a battery record.
+        db_obj: ModelType,
+        data: BaseModel,
+    ) -> ModelType:
+        """Update record of a specific model.
 
         Args:
-            battery: Battery object.
-            battery_data: The data to update a battery record.
+            db_obj: Database object to update.
+            data: The data to update an object.
 
         Returns:
-            Updated battery instance.
+            Updated object of a specific model.
         """
-        for field, value in battery_data.model_dump(exclude_unset=True).items():
-            setattr(battery, field, value)
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(db_obj, field, value)
         await self.session.flush()
-        await self.session.refresh(battery)
-        return battery
+        await self.session.refresh(db_obj)
+        return db_obj
 
-    async def remove(self, battery: Battery) -> Battery | None:
-        """Remove a battery record.
+    async def remove(self, db_obj: ModelType) -> ModelType:
+        """Remove record of a specific model.
 
         Args:
-            battery: Battery object.
+            db_obj: Database object to remove.
 
         Returns:
-            Removed battery instance.
+            Removed object of a specific model.
         """
-        await self.session.delete(battery)
+        await self.session.delete(db_obj)
         await self.session.flush()
-        return battery
+        return db_obj
+
+
+class BatteryRepository(BaseRepository[Battery]):
+    """Repository for managing battery data interactions with the database."""
+
+    model = Battery
