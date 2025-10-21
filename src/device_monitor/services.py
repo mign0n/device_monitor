@@ -10,7 +10,7 @@ from device_monitor.crud import BatteryRepository
 from device_monitor.database.base import Base
 from device_monitor.database.models import Battery
 from device_monitor.schemas import BatteryCreate, BatteryUpdate
-from device_monitor.validators import check_battery_exists
+from device_monitor.validators import check_object_exists
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -139,7 +139,7 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         Returns:
             The battery record if found; otherwise, None.
         """
-        return await check_battery_exists(id_, self.battery_repo)
+        return await check_object_exists(id_, self.battery_repo)
 
     @override
     async def update(
@@ -156,7 +156,7 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         Returns:
             Updated instance of the battery.
         """
-        battery = await check_battery_exists(id_, self.battery_repo)
+        battery = await check_object_exists(id_, self.battery_repo)
         return await self.battery_repo.update(battery, data)
 
     @override
@@ -169,5 +169,5 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         Returns:
             Removed instance of the battery.
         """
-        battery = await check_battery_exists(id_, self.battery_repo)
+        battery = await check_object_exists(id_, self.battery_repo)
         return await self.battery_repo.remove(battery)

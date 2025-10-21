@@ -1,32 +1,35 @@
 import uuid
+from typing import Any
 
 from fastapi import HTTPException, status
 
-from device_monitor.crud import BatteryRepository
-from device_monitor.database.models import Battery
+from device_monitor.crud import BaseRepository, ModelType
 
 
-async def check_battery_exists(
-    battery_id: uuid.UUID,
-    repository: BatteryRepository,
-) -> Battery:
-    """Check if a battery exists in the database.
+async def check_object_exists(
+    obj_id: uuid.UUID,
+    repository: BaseRepository[ModelType],
+    detail: Any = "Object not found",
+) -> ModelType:
+    """Check if an object exists in the database.
 
     Args:
-        battery_id: Battery ID.
-        repository: The repository used to access battery records.
+        obj_id: Object ID.
+        repository: The repository used to access database object.
+        detail: Any data to be sent to the client in the `detail` key of the
+            JSON response.
 
     Raises:
-        HTTPException: If the battery with the given identifier is not found,
+        HTTPException: If the object with the given identifier is not found,
             a 404 HTTPException is raised with an appropriate error message.
 
     Returns:
-        The battery record if found.
+        The Model object if found.
     """
-    battery = await repository.get_by_id(battery_id)
-    if not battery:
+    obj = await repository.get_by_id(obj_id)
+    if not obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Battery not found",
+            detail=detail,
         )
-    return battery
+    return obj
