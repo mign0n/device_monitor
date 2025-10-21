@@ -9,10 +9,10 @@ from device_monitor.dependencies import get_battery_service
 from device_monitor.schemas import BatteryCreate, BatteryDB, BatteryUpdate
 from device_monitor.services import BatteryService
 
-router = APIRouter(tags=["Batteries"])
+battery_router = APIRouter(tags=["Batteries"])
 
 
-@router.get(
+@battery_router.get(
     "/batteries",
     response_model=list[BatteryDB],
     summary="Retrieve a list of all batteries.",
@@ -32,7 +32,7 @@ async def get_batteries(
     return await battery_service.get_all()
 
 
-@router.post(
+@battery_router.post(
     "/battery",
     response_model=BatteryDB,
     summary="Create a battery.",
@@ -54,7 +54,7 @@ async def create_battery(
     return await battery_service.create(battery_data)
 
 
-@router.get(
+@battery_router.get(
     "/battery",
     response_model=BatteryDB,
     summary="Retrieve the battery by its ID.",
@@ -76,7 +76,7 @@ async def get_battery(
     return await battery_service.get_by_id(battery_id)
 
 
-@router.patch(
+@battery_router.patch(
     "/battery",
     response_model=BatteryDB,
     summary="Update a battery data.",
@@ -102,7 +102,7 @@ async def update_battery(
     return await battery_service.update(battery_id, battery_data)
 
 
-@router.delete(
+@battery_router.delete(
     "/battery",
     response_model=BatteryDB,
     summary="Delete the battery by its ID.",

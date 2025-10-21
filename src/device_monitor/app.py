@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from device_monitor import routers
 from device_monitor.config import get_settings
+from device_monitor.routers import battery_router
 
 app = FastAPI()
 
@@ -21,6 +21,6 @@ def app_factory() -> FastAPI:
         root_path=app_settings.root_path,
     )
 
-    app.include_router(routers.router)
+    app.include_router(battery_router)
 
     return app
