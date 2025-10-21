@@ -13,6 +13,7 @@ class AppSettings(BaseSettings):
         redoc_url: ReDoc url.
         host: Application host.
         port: Application port.
+        debug: Is debug mode.
     """
 
     model_config = SettingsConfigDict(
@@ -30,6 +31,7 @@ class AppSettings(BaseSettings):
     host: str
     port: int
     root_path: str = "/api"
+    debug: bool = False
 
 
 class DBSettings(BaseSettings):

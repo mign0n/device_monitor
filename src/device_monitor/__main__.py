@@ -9,6 +9,6 @@ if __name__ == "__main__":
         host=app_settings.host,
         port=app_settings.port,
         factory=True,
-        reload=True,
+        reload=app_settings.debug,
         workers=4,
     )
