@@ -25,10 +25,30 @@ class DeviceDB(DeviceCreate):
     """Represents a device in the database.
 
     Attributes:
-        id: A unique identifier for the battery.
+        id: Device ID.
+        batteries: List of batteries associated with device.
     """
 
     id: uuid.UUID
+    batteries: list["BatteryDB"]
+
+
+class DeviceUpdate(BaseModel):
+    """Represents a device data for updateing record in the database.
+
+    Attributes:
+        name: Device name.
+        firmware_version: Device firmware version.
+        status: Device status (on/off).
+        model_config: Configuration for the Pydantic model, set to accept
+            attribute assignment and use enum values.
+    """
+
+    name: str
+    firmware_version: str
+    status: bool = False
+
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class BatteryCreate(BaseModel):
@@ -57,6 +77,7 @@ class BatteryDB(BatteryCreate):
 
     Attributes:
         id: A unique identifier for the battery.
+        device: Device associated with battery.
     """
 
     id: uuid.UUID
@@ -72,6 +93,7 @@ class BatteryUpdate(BaseModel):
         residual_capacity: The current residual capacity of the battery
             in amp-hours.
         lifespan: The expected lifespan of the battery in hours.
+        device_id: ID of device associated with battery.
         model_config: Configuration for the Pydantic model, set to accept
             attribute assignment and use enum values.
     """

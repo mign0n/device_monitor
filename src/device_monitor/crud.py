@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_monitor.database.base import Base
-from device_monitor.database.models import Battery
+from device_monitor.database.models import Battery, Device
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -102,3 +102,9 @@ class BatteryRepository(BaseRepository[Battery]):
     """Repository for managing battery data interactions with the database."""
 
     model = Battery
+
+
+class DeviceRepository(BaseRepository[Device]):
+    """Repository for managing device data interactions with the database."""
+
+    model = Device

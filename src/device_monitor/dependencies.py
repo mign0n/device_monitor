@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from device_monitor.database.session import (
     sessionmaker,
 )
-from device_monitor.services import BatteryService
+from device_monitor.services import BatteryService, DeviceService
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession]:
@@ -44,3 +44,18 @@ def get_battery_service(
         operations.
     """
     return BatteryService(session)
+
+
+def get_device_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> DeviceService:
+    """Retrieve the DeviceService instance with an active database session.
+
+    Args:
+        session: The active database session injected via dependency.
+
+    Returns:
+        An instance of the DeviceService for managing battery-related
+        operations.
+    """
+    return DeviceService(session)

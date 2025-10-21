@@ -6,10 +6,15 @@ from typing import TypeVar, override
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from device_monitor.crud import BatteryRepository
+from device_monitor.crud import BatteryRepository, DeviceRepository
 from device_monitor.database.base import Base
-from device_monitor.database.models import Battery
-from device_monitor.schemas import BatteryCreate, BatteryUpdate
+from device_monitor.database.models import Battery, Device
+from device_monitor.schemas import (
+    BatteryCreate,
+    BatteryUpdate,
+    DeviceCreate,
+    DeviceUpdate,
+)
 from device_monitor.validators import check_object_exists
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -171,3 +176,80 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
         """
         battery = await check_object_exists(id_, self.battery_repo)
         return await self.battery_repo.remove(battery)
+
+
+class DeviceService(BaseService[Device, DeviceCreate, DeviceUpdate]):
+    """Service for managing battery-related operations."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        """Initializes this class with a database session.
+
+        Args:
+            session: The asynchronous session for database interactions.
+        """
+        super().__init__(session)
+        self.device_repo = DeviceRepository(session)
+
+    @override
+    async def get_all(self) -> Sequence[Device]:
+        """Retrieve all device records.
+
+        Returns:
+            A sequence containing all device records from the repository.
+        """
+        return await self.device_repo.get_all()
+
+    @override
+    async def create(self, data: DeviceCreate) -> Device:
+        """Create a device record.
+
+        Args:
+            data: The data to create a new battery record.
+
+        Returns:
+            A device instance from the repository.
+        """
+        return await self.device_repo.create(data)
+
+    @override
+    async def get_by_id(self, id_: uuid.UUID) -> Device | None:
+        """Retrieve record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+
+        Returns:
+            The device record if found; otherwise, None.
+        """
+        return await check_object_exists(id_, self.device_repo)
+
+    @override
+    async def update(
+        self,
+        id_: uuid.UUID,
+        data: DeviceUpdate,
+    ) -> Device | None:
+        """Update record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+            data: The data to update a record.
+
+        Returns:
+            Updated instance of the device.
+        """
+        device = await check_object_exists(id_, self.device_repo)
+        return await self.device_repo.update(device, data)
+
+    @override
+    async def remove(self, id_: uuid.UUID) -> Device | None:
+        """Remove record of the specified type by id.
+
+        Args:
+            id_: Record ID.
+
+        Returns:
+            Removed instance of the device.
+        """
+        device = await check_object_exists(id_, self.device_repo)
+        return await self.device_repo.remove(device)
