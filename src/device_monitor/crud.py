@@ -108,3 +108,17 @@ class DeviceRepository(BaseRepository[Device]):
     """Repository for managing device data interactions with the database."""
 
     model = Device
+
+    async def get_by_name(self, device_name: str) -> Device | None:
+        """Get record of a specific model from the database by name.
+
+        Args:
+            device_name: Device name.
+
+        Returns:
+            A object of a specific model or None.
+        """
+        instance = await self.session.execute(
+            select(self.model).where(self.model.name == device_name)
+        )
+        return instance.scalar_one_or_none()

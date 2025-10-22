@@ -15,7 +15,10 @@ from device_monitor.schemas import (
     DeviceCreate,
     DeviceUpdate,
 )
-from device_monitor.validators import check_object_exists
+from device_monitor.validators import (
+    check_device_name_duplicate,
+    check_object_exists,
+)
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -179,7 +182,7 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
 
 
 class DeviceService(BaseService[Device, DeviceCreate, DeviceUpdate]):
-    """Service for managing battery-related operations."""
+    """Service for managing device-related operations."""
 
     def __init__(self, session: AsyncSession) -> None:
         """Initializes this class with a database session.
@@ -204,11 +207,12 @@ class DeviceService(BaseService[Device, DeviceCreate, DeviceUpdate]):
         """Create a device record.
 
         Args:
-            data: The data to create a new battery record.
+            data: The data to create a new device record.
 
         Returns:
             A device instance from the repository.
         """
+        await check_device_name_duplicate(data.name, self.device_repo)
         return await self.device_repo.create(data)
 
     @override

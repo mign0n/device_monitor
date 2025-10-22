@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
-from device_monitor.crud import BaseRepository, ModelType
+from device_monitor.crud import BaseRepository, DeviceRepository, ModelType
 
 
 async def check_object_exists(
@@ -33,3 +33,30 @@ async def check_object_exists(
             detail=detail,
         )
     return obj
+
+
+async def check_device_name_duplicate(
+    name: str,
+    repository: DeviceRepository,
+    detail: Any = (
+        "A device with that name already exists. "
+        "The device name must be unique."
+    ),
+) -> None:
+    """Check if a device name is not unique.
+
+    Args:
+        name: Device name.
+        repository: The repository used to access database object.
+        detail: Any data to be sent to the client in the `detail` key of the
+            JSON response.
+
+    Raises:
+        HTTPException: If a device with the given name exists in the database,
+            a 400 HTTPException is raised with an appropriate error message.
+    """
+    if await repository.get_by_name(name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail,
+        )

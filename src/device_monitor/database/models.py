@@ -36,6 +36,7 @@ class Battery(Base):
     device: Mapped["Device | None"] = relationship(
         "Device",
         back_populates="batteries",
+        lazy="selectin",
     )
 
 

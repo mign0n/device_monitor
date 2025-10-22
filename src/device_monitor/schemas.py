@@ -21,16 +21,24 @@ class DeviceCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
-class DeviceDB(DeviceCreate):
-    """Represents a device in the database.
+class DeviceDBLight(DeviceCreate):
+    """Lightweight device schema for nested serialization.
 
     Attributes:
         id: Device ID.
-        batteries: List of batteries associated with device.
     """
 
     id: uuid.UUID
-    batteries: list["BatteryDB"]
+
+
+class DeviceDB(DeviceDBLight):
+    """Represents a device in the database.
+
+    Attributes:
+        batteries: List of batteries associated with device.
+    """
+
+    batteries: list["BatteryDBLight"]
 
 
 class DeviceUpdate(BaseModel):
@@ -72,16 +80,24 @@ class BatteryCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
-class BatteryDB(BatteryCreate):
-    """Represents a battery in the database.
+class BatteryDBLight(BatteryCreate):
+    """Lightweight battery schema for nested serialization.
 
     Attributes:
-        id: A unique identifier for the battery.
-        device: Device associated with battery.
+        id: Battery ID.
     """
 
     id: uuid.UUID
-    device: DeviceDB | None = None
+
+
+class BatteryDB(BatteryDBLight):
+    """Represents a battery in the database.
+
+    Attributes:
+        device: Device associated with battery.
+    """
+
+    device: DeviceDBLight | None = None
 
 
 class BatteryUpdate(BaseModel):
