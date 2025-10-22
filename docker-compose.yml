@@ -21,3 +21,20 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+
+  app:
+    container_name: device_monitor_app
+    command: >
+      sh -c "alembic upgrade head && python -m device_monitor"
+    env_file: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: no
