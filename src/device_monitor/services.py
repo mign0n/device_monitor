@@ -17,6 +17,7 @@ from device_monitor.schemas import (
 )
 from device_monitor.validators import (
     check_device_name_duplicate,
+    check_limit_batteries_per_device,
     check_object_exists,
 )
 
@@ -165,6 +166,13 @@ class BatteryService(BaseService[Battery, BatteryCreate, BatteryUpdate]):
             Updated instance of the battery.
         """
         battery = await check_object_exists(id_, self.battery_repo)
+        if data.device_id:
+            check_limit_batteries_per_device(
+                await check_object_exists(
+                    data.device_id,
+                    DeviceRepository(self.session),
+                )
+            )
         return await self.battery_repo.update(battery, data)
 
     @override

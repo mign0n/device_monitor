@@ -4,6 +4,9 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from device_monitor.crud import BaseRepository, DeviceRepository, ModelType
+from device_monitor.database.models import Device
+
+MAX_BATTERIES_PER_DEVICE = 5
 
 
 async def check_object_exists(
@@ -59,4 +62,29 @@ async def check_device_name_duplicate(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
+        )
+
+
+def check_limit_batteries_per_device(
+    device: Device,
+    limitation: int = MAX_BATTERIES_PER_DEVICE,
+    detail: Any = "No more than {} batteries can be connected to the device.",
+) -> None:
+    """Check maximum number of battery connections to the device.
+
+    Args:
+        device: Device.
+        limitation: The maximum allowed number of batteries to connect.
+        detail: Any data to be sent to the client in the `detail` key of the
+            JSON response.
+
+    Raises:
+        HTTPException: If a device with the given name exists in the database,
+            a 400 HTTPException is raised with an appropriate error message.
+    """
+    batteries_count = len(device.batteries)
+    if batteries_count >= limitation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=detail.format(limitation),
         )
