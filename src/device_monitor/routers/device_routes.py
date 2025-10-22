@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Sequence
 from typing import Annotated
 
@@ -51,3 +52,25 @@ async def create_device(
         The newly created device record.
     """
     return await device_service.create(device_data)
+
+
+@device_router.get(
+    "/device",
+    response_model=DeviceDB,
+    summary="Retrieve the device by its ID.",
+    description="This endpoint fetches the device by ID from the database.",
+)
+async def get_device(
+    device_id: uuid.UUID,
+    device_service: Annotated[DeviceService, Depends(get_device_service)],
+) -> Device | None:
+    """Retrieve the device by its ID.
+
+    Args:
+        device_id: Device ID.
+        device_service: The service used to interact with device records.
+
+    Returns:
+        The newly created device record.
+    """
+    return await device_service.get_by_id(device_id)
