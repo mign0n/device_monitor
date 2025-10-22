@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from device_monitor.database.models import Device
 from device_monitor.dependencies import get_device_service
-from device_monitor.schemas import DeviceDB
+from device_monitor.schemas import DeviceCreate, DeviceDB
 from device_monitor.services import DeviceService
 
 device_router = APIRouter(tags=["Devices"])
@@ -29,3 +29,25 @@ async def get_devices(
         A sequence containing all device records.
     """
     return await device_service.get_all()
+
+
+@device_router.post(
+    "/device",
+    response_model=DeviceDB,
+    summary="Create a device.",
+    description="This endpoint creates new device record in the database.",
+)
+async def create_device(
+    device_data: DeviceCreate,
+    device_service: Annotated[DeviceService, Depends(get_device_service)],
+) -> Device:
+    """Create a new device record.
+
+    Args:
+        device_data: The data to create a new device record.
+        device_service: The service used to interact with device records.
+
+    Returns:
+        The newly created device record.
+    """
+    return await device_service.create(device_data)

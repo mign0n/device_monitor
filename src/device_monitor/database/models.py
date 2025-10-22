@@ -61,4 +61,5 @@ class Device(Base):
         back_populates="device",
         cascade="save-update",
         passive_deletes=True,
+        lazy="selectin",
     )
