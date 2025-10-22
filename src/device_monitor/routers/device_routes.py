@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 
 from device_monitor.database.models import Device
 from device_monitor.dependencies import get_device_service
-from device_monitor.schemas import DeviceCreate, DeviceDB
+from device_monitor.schemas import DeviceCreate, DeviceDB, DeviceUpdate
 from device_monitor.services import DeviceService
 
 device_router = APIRouter(tags=["Devices"])
@@ -74,3 +74,29 @@ async def get_device(
         The newly created device record.
     """
     return await device_service.get_by_id(device_id)
+
+
+@device_router.patch(
+    "/device",
+    response_model=DeviceDB,
+    summary="Update a device data.",
+    description=(
+        "This endpoint updates an existing device record in the database."
+    ),
+)
+async def update_device(
+    device_id: uuid.UUID,
+    device_data: DeviceUpdate,
+    device_service: Annotated[DeviceService, Depends(get_device_service)],
+) -> Device | None:
+    """Updates an existing device record.
+
+    Args:
+        device_id: The ID of the device to update.
+        device_data: The data to update the device record.
+        device_service: The service used to interact with device records.
+
+    Returns:
+        The updated device record.
+    """
+    return await device_service.update(device_id, device_data)
