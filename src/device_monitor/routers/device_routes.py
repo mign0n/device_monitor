@@ -100,3 +100,25 @@ async def update_device(
         The updated device record.
     """
     return await device_service.update(device_id, device_data)
+
+
+@device_router.delete(
+    "/device",
+    response_model=DeviceDB,
+    summary="Delete the device by its ID.",
+    description="This endpoint removes the device from the database.",
+)
+async def remove_device(
+    device_id: uuid.UUID,
+    device_service: Annotated[DeviceService, Depends(get_device_service)],
+) -> Device | None:
+    """Remove the device by its ID.
+
+    Args:
+        device_id: Device ID.
+        device_service: The service used to interact with device records.
+
+    Returns:
+        The removed device record.
+    """
+    return await device_service.remove(device_id)
